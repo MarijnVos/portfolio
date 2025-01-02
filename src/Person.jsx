@@ -4,18 +4,22 @@ Command: npx gltfjsx@6.5.3 person.gltf
 */
 
 import React from 'react'
-import { useGLTF } from '@react-three/drei'
+import { Environment, useGLTF } from '@react-three/drei'
+import { useFrame, Canvas } from '@react-three/fiber';
 
 export default function Model(props) {
-  const { nodes, materials } = useGLTF('./public/person.gltf')
+  const { nodes, materials } = useGLTF('./src/assets/person.gltf')
   return (
     <>
-     <group {...props} dispose={null}>
-      <mesh geometry={nodes['Man_03_-_Renderpeople'].geometry} material={materials['Ramon - Renderpeople']}/>
-    </group>
+     <Canvas camera={{ position: [1, 0, 1] }}>
+        <group {...props} dispose={null} position={[0,-1,0]}>
+          <mesh geometry={nodes['Man_03_-_Renderpeople'].geometry} material={materials['Ramon - Renderpeople']}/>
+        </group>
+        <Environment preset="sunset" />
+      </Canvas>
     </>
    
   )
 }
 
-useGLTF.preload('./public/person.gltf')
+useGLTF.preload('./src/assets/person.gltf')
