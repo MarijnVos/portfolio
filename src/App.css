@@ -12,6 +12,7 @@ canvas{
   height: 100vh !important;
 }
 .menu-container{
+  transition: opacity 0.25s ease, visibility 0.25s ease;
   color: white;
   font-family: monospace;
   position: fixed;
@@ -23,12 +24,24 @@ canvas{
 
   justify-content: center;
 }
+.menu-container.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.menu-container.hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
 .menu-subtitle {
-  margin-bottom: 3px;
+  margin-bottom: 6px;
+  font-size: 1.4em;
 }
 
 .menu-title{
-  font-size: 2em;
+  font-size: 1.4em;
+  margin-top: 5px;
 }
 .menu-next{
   font-size: 3em;
