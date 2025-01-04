@@ -81,7 +81,7 @@ function Scene3() {
         <Lines />;
         <OrbitControls 
                         enableZoom={false} 
-                        enenablePan={false} 
+                        enablePan={false} 
                         autoRotateSpeed={1}
                         minPolarAngle={0} // Allow the camera to look directly up
                         maxPolarAngle={Math.PI*0.48} // Allow the camera to look directly down

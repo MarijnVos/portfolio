@@ -4,13 +4,14 @@ import Box from './Box.jsx'
 
 function Scene5(){
     return(
-        <Canvas camera={{ position: [0.3, 0.0, 1] }}>
+        <Canvas camera={{ position: [0.3, 0.0, 1.5] }}>
             <Box/>
             
             <Environment preset="sunset" />
             <OrbitControls 
+                            autoRotate={true}
                             enableZoom={false} 
-                            enenablePan={false} 
+                            enablePan={false} 
                             autoRotateSpeed={1}
                             minPolarAngle={0} // Allow the camera to look directly up
                             maxPolarAngle={Math.PI*0.75} // Allow the camera to look directly down

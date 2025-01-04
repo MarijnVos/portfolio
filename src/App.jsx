@@ -3,6 +3,7 @@ import Scene3 from './Scene3.jsx';
 import Scene4 from './Scene4.jsx';
 import { useState } from 'react';
 import Scene5 from './Scene5.jsx';
+import Scene6 from './Scene6.jsx';
 
 function App() {
   const [sceneIndex, setSceneIndex] = useState(0);

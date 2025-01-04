@@ -1,74 +1,96 @@
-import React, { useRef, useEffect, useState } from 'react'
-import { useGLTF } from '@react-three/drei'
-import { useFrame, Canvas } from '@react-three/fiber'
-import * as THREE from 'three'
+import React, { useRef, useEffect, useState } from 'react';
+import { useGLTF } from '@react-three/drei';
+import { useFrame } from '@react-three/fiber';
+import * as THREE from 'three';
 
 export default function Model(props) {
-  const { nodes } = useGLTF('./src/assets/box.gltf')
-  const [linePositions, setLinePositions] = useState([])
-
-  const lineRef = useRef()
-  const [visibleSegments, setVisibleSegments] = useState(1) // Track visible segments
-  const maxSegments = 8  // Total segments (or points) in the line
-  const growSpeed = 3 // Speed at which the line grows (per frame)
-  const [growing, setGrowing] = useState(true) // Direction of growth
+  const { nodes } = useGLTF('/portfolio/box.gltf');
+  const [linePositions, setLinePositions] = useState([]);
+  const [animatedPositions, setAnimatedPositions] = useState([]);
+  const [visibleSegments, setVisibleSegments] = useState(1); // Tracks visible segments
+  const [progress, setProgress] = useState(1); // Animation progress for interpolation
+  const [growing, setGrowing] = useState(true); // Tracks growing/shrinking state
+  const [animatingToOutward, setAnimatingToOutward] = useState(true); // Animation direction
+  const lineRef = useRef();
 
   useEffect(() => {
     if (nodes['Cube']) {
-      // Extract vertex positions from geometry
-      const geometry = nodes['Cube'].geometry
-      const positions = geometry.attributes.position.array
+      const geometry = nodes['Cube'].geometry;
+      const positions = geometry.attributes.position.array;
 
-      // Convert the positions array into a format suitable for line geometry
-      const lineVertices = []
-
-      for (let i = 0; i < positions.length; i += 8) {
-        lineVertices.push(new THREE.Vector3(positions[i], positions[i + 1], positions[i + 2]))
+      const lineVertices = [];
+      for (let i = 0; i < 25000; i += 8) {
+        lineVertices.push(new THREE.Vector3(positions[i], positions[i + 1], positions[i + 2]));
       }
-      setLinePositions(lineVertices)
-    }
-  }, [nodes])
+      setLinePositions(lineVertices);
 
-  // Animate the line growing or shrinking
-  useFrame(() => {
-    if (lineRef.current) {
+      const outwardPositions = lineVertices.map((point) =>
+        point.clone().normalize().multiplyScalar(Math.random()*0.8)
+      );
+      setAnimatedPositions(outwardPositions);
+    }
+  }, [nodes]);
+
+  // Handle click to toggle outward or inward animation
+  const handleClick = () => {
+    setAnimatingToOutward(true);
+    setProgress(0); // Reset progress
+  };
+
+  // Animation logic
+  useFrame((state,delta) => {
+    if (lineRef.current && linePositions.length > 0 && animatedPositions.length > 0) {
+      // Determine the start and end positions based on animation direction
+      const startPositions = animatingToOutward ? linePositions : animatedPositions;
+      const endPositions = animatingToOutward ? animatedPositions : linePositions;
+
+      // Interpolate between start and end positions
+      const interpolatedPositions = startPositions.map((start, i) => {
+        const end = endPositions[i];
+        return new THREE.Vector3().lerpVectors(start, end, progress);
+      });
+
+      // Control the number of visible segments
+      const currentVisiblePoints = interpolatedPositions.slice(0, Math.floor(visibleSegments));
+      const geometry = new THREE.BufferGeometry().setFromPoints(currentVisiblePoints);
+      lineRef.current.geometry.dispose(); // Dispose of old geometry
+      lineRef.current.geometry = geometry;
+
+      // Update progress for interpolation
+      if (progress < 1) {
+        setProgress((prev) => Math.min(prev + delta*10, 1)); // Adjust speed of interpolation
+      }
+      else{
+        if(animatingToOutward){
+          setAnimatingToOutward(false);
+          setProgress(0); // Reset progress
+        }
+      }
+
+      // Growing/Shrinking effect
       if (growing) {
-        // Grow the line
-        if (visibleSegments < 3000) {
-          setVisibleSegments(visibleSegments + growSpeed)
+        if (visibleSegments < interpolatedPositions.length) {
+          setVisibleSegments((prev) => prev + 3); // Increase segments
         } else {
-          // Reverse direction when full
-          setGrowing(false)
+          setGrowing(false); // Switch to shrinking
         }
       } else {
-        // Shrink the line
         if (visibleSegments > 1) {
-          setVisibleSegments(visibleSegments - growSpeed)
+          setVisibleSegments((prev) => prev - 3); // Decrease segments
         } else {
-          // Reverse direction when reaching the minimum
-          setGrowing(true)
+          setGrowing(true); // Switch to growing
         }
       }
     }
-  })
-
-  const currentVisiblePoints = linePositions.slice(0, Math.floor(visibleSegments))
-
-  // Update the geometry each frame when visible segments change
-  useEffect(() => {
-    if (lineRef.current) {
-      const geometry = new THREE.BufferGeometry().setFromPoints(currentVisiblePoints)
-      lineRef.current.geometry = geometry
-    }
-  }, [currentVisiblePoints])
+  });
 
   return (
-    <>
+    <group onPointerDown={handleClick}>
       <line ref={lineRef} position={[0, -0.15, 0]}>
-        <lineBasicMaterial color='rgb(135, 253, 255)' />
+        <lineBasicMaterial color="rgb(135, 253, 255)" />
       </line>
-    </>
-  )
+    </group>
+  );
 }
 
-useGLTF.preload('./src/assets/box.gltf')
+useGLTF.preload('/portfolio/box.gltf');
